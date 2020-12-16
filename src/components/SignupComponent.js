@@ -1,30 +1,32 @@
 import React from 'react';
 import {Form, FormGroup, Label,FormFeedback, Input ,Col,Button } from 'reactstrap';
+import axios from 'axios';
 
 class Signup extends React.Component{
 
     constructor(props){
         super(props);
-        this.state = {
-            firstname: '',
-            lastname: '',
-            username: '',
-            email: '',
-            password: '',
-            confirmpassword: '',
-            isAgree: false,
-            touched:{
-                firstname: false,
-                lastname: false,
-                username: false,
-                email: false,
-            }
-        }
+        this.state = this.initialState ;
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleFormSubmit = this.handleFormSubmit.bind(this);
         this.handleBlur = this.handleBlur.bind(this);
     }
     
+    initialState = {
+        firstname: '',
+        lastname: '',
+        email: '',
+        password: '',
+        confirmpassword: '',
+        isAgree: false,
+        touched:{
+            firstname: false,
+            lastname: false,
+            email: false,
+            password: false,
+            confirmpassword: false
+        }
+    };
     handleInputChange(event){
         const target = event.target ;
         const value = (target.type === "checkbox")? target.checked : target.value ;
@@ -37,9 +39,23 @@ class Signup extends React.Component{
     }
 
     handleFormSubmit(event){
-        console.log("Feedback is submited"+JSON.stringify(this.state));
-        alert("Feedback is submited"+JSON.stringify(this.state));
-        event.preventDefault();
+        event.preventDefault();  
+
+        const User = {
+            firstname: this.state.firstname,
+            lastname: this.state.lastname,
+            email: this.state.email,
+            password: this.state.password,
+        };
+
+        axios.post("http://localhost:8080/signup",User).then(response => {
+
+            if(response.data!==null){
+                console.log(response.data);
+                alert("You Have Successfully Registered");
+                this.setState(this.initialState);
+            }
+        });
     }
     
     handleBlur = (field) => (e)=>{
@@ -48,47 +64,53 @@ class Signup extends React.Component{
         });
     }
 
-    Validate(firstname,lastname,username,email){
+    Validate(firstname,lastname,email,password,confirmpassword){
         const errors={
             firstname:'',
             lastname:'',
-            username: '',
             email:'',
+            password:'',
+            confirmpassword:''
         }
         if(this.state.touched.firstname){
             if(firstname.length < 3){
-                errors.firstname="first name should have atleast 3 charcters";
+                errors.firstname="first name must have atleast 3 charcters";
             }
-            else if(firstname.length > 10){
-                errors.firstname="first name should have atmost 12 charcters";
+            else if(firstname.length > 15){
+                errors.firstname="first name must have atmost 15 charcters";
             }
         }
         if(this.state.touched.lastname){
-            if(lastname.length < 3){
-                errors.lastname="last name should have atleast 3 charcters";
-            }
-            else if(lastname.length > 10){
-                errors.lastname="last name should have atmost 12 charcters";
+            if(lastname.length > 15){
+                errors.lastname="last name must have atmost 15 charcters";
             }
         }
-        if(this.state.touched.username){
-            if(username.length < 3){
-                errors.username="User name should have atleast 3 charcters";
+        if(this.state.touched.password){
+            if(password.length < 3){
+                errors.password="Password must have atleast 3 charcters";
             }
-            else if(username.length > 10){
-                errors.username="User name should have atmost 12 charcters";
+            else if(password.length > 50){
+                errors.password="Password must have atmost 50 charcters";
             }
         }
         if(this.state.touched.email && email.split('').filter(c => c==='@').length !==1){
-            errors.email="Email should contain a @ symbol";
+            errors.email="Invalid email id";
+        }
+        if(this.state.touched.confirmpassword && password !== confirmpassword){
+            if(password===''){
+                errors.confirmpassword="Please first fill up password";
+            }
+            else{
+                errors.confirmpassword="Password did not match";
+            }
         }
         return errors;
     }
 
     render(){
 
-        const errors = this.Validate(this.state.firstname,this.state.lastname,this.state.username,this.state.email);
-
+        const errors = this.Validate(this.state.firstname,this.state.lastname,this.state.email,this.state.password,this.state.confirmpassword);
+        const isPasswordEqual=(this.state.password===this.state.confirmpassword);
         return (
             <div className="container">
                 <div className="row row-content">
@@ -103,10 +125,11 @@ class Signup extends React.Component{
                                     <Input type="text" id="firstname" name="firstname"
                                         placeholder="First Name" value={this.state.firstname}
                                         onChange={this.handleInputChange}
+                                        required
                                         valid={errors.firstname === ''&&this.state.touched.firstname}
                                         invalid={errors.firstname !== ''}
                                         onBlur={this.handleBlur('firstname')}
-                                         />
+                                    />
                                     <FormFeedback>{errors.firstname}</FormFeedback>
                                 </Col>
                             </FormGroup>
@@ -116,24 +139,11 @@ class Signup extends React.Component{
                                     <Input type="text" id="lastname" name="lastname"
                                         placeholder="Last Name" value={this.state.lastname}
                                         onChange={this.handleInputChange}
-                                        valid={errors.lastname === ''&&this.state.touched.lastname}
+                                        valid={errors.lastname === ''&&this.state.touched.lastname&&this.state.lastname!==''}
                                         invalid={errors.lastname !== ''}
                                         onBlur={this.handleBlur('lastname')}
-                                         />
+                                    />
                                     <FormFeedback>{errors.lastname}</FormFeedback>
-                                </Col>
-                            </FormGroup>
-                            <FormGroup row>
-                                <Label htmlFor="username" md={2} >User Name</Label>
-                                <Col md={10} >
-                                    <Input type="text" id="username" name="username"
-                                        placeholder="User Name" value={this.state.username}
-                                        onChange={this.handleInputChange}
-                                        valid={errors.username === ''&&this.state.touched.username}
-                                        invalid={errors.username !== ''}
-                                        onBlur={this.handleBlur('username')}
-                                         />
-                                    <FormFeedback>{errors.username}</FormFeedback>
                                 </Col>
                             </FormGroup>
                             <FormGroup row>
@@ -142,10 +152,11 @@ class Signup extends React.Component{
                                     <Input type="email" id="email" name="email"
                                         placeholder="Email Id" value={this.state.email}
                                         onChange={this.handleInputChange}
+                                        required
                                         valid={errors.email === ''&&this.state.touched.email}
                                         invalid={errors.email !== ''}
                                         onBlur={this.handleBlur('email')}
-                                         />
+                                    />
                                     <FormFeedback>{errors.email}</FormFeedback>
                                 </Col>
                             </FormGroup>
@@ -154,15 +165,27 @@ class Signup extends React.Component{
                                 <Col md={10} >
                                     <Input type="password" id="password" name="password"
                                         placeholder="Password" value={this.state.password}
-                                        onChange={this.handleInputChange} />
+                                        onChange={this.handleInputChange}
+                                        required
+                                        valid={errors.password===''&&this.state.touched.password}
+                                        invalid={errors.password !== ''}
+                                        onBlur={this.handleBlur('password')}
+                                    />
+                                    <FormFeedback>{errors.password}</FormFeedback>
                                 </Col>
                             </FormGroup>
                             <FormGroup row>
                                 <Label htmlFor="password" md={2} >Confirm Password</Label>
                                 <Col md={10} >
-                                    <Input type="confirmpassword" id="confirmpassword" name="confirmpassword"
+                                    <Input type="password" id="confirmpassword" name="confirmpassword"
                                         placeholder="Confirm Password" value={this.state.confirmpassword}
-                                        onChange={this.handleInputChange} />
+                                        onChange={this.handleInputChange}
+                                        required
+                                        valid={errors.confirmpassword ===''&&this.state.touched.confirmpassword}
+                                        invalid={errors.confirmpassword !== ''}
+                                        onBlur={this.handleBlur('confirmpassword')} 
+                                    />
+                                    <FormFeedback>{errors.confirmpassword}</FormFeedback>
                                 </Col>
                             </FormGroup>
                             <FormGroup row>
@@ -177,8 +200,8 @@ class Signup extends React.Component{
                                 </Col>
                             </FormGroup>
                             <FormGroup>
-                                <Col md={{offset:2, size:10}}>
-                                    <Button type="submit" color="primary">
+                                <Col md={{offset:2, size:6}}>
+                                    <Button type="submit" disabled={!isPasswordEqual} color="primary">
                                         Sign Up
                                     </Button>
                                 </Col>
