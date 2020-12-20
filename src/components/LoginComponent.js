@@ -1,17 +1,21 @@
 import React from 'react';
 import {Form, FormGroup, Label, Input ,Col,Button } from 'reactstrap';
+import { UserDetails } from "./UserDetailsComponent";
+import axios from 'axios';
 
 class Login extends React.Component{
 
     constructor(props){
         super(props);
-        this.state = {
-            email: '',
-            password: ''
-        }
+        this.state = this.loginInitialState;
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleFormSubmit = this.handleFormSubmit.bind(this);
     }
+    
+    loginInitialState = {
+        email: '',
+        password: ''
+    };
         
     handleInputChange(event){
         const target = event.target ;
@@ -25,12 +29,34 @@ class Login extends React.Component{
     }
 
     handleFormSubmit(event){
-        console.log("Feedback is submited"+JSON.stringify(this.state));
-        alert("Feedback is submited"+JSON.stringify(this.state));
         event.preventDefault();
+        console.log("logged in");
+
+        const user = {
+            email: this.state.email,
+            password: this.state.password
+        };
+
+        axios.post("http://localhost:8080/login",user).then(response => {
+
+            if(response.data!==null){
+                alert("You Have Successfully logged in");
+                console.log(response.data);
+                UserDetails.firstname=response.data.firstname;
+                UserDetails.lastname=response.data.lastname;
+                UserDetails.email=response.data.email;
+                this.props.history.push('/home');
+                this.setState(this.loginInitialState);
+            }
+            else{
+                alert("Invalid Email and Password...do signup bro or enter correct details!!")
+            }
+        });
     }
 
     render(){
+        const isPasswordProvided=(this.state.password !== '');
+
         return (
             <div className="container">
                 <div className="row row-content">
@@ -58,7 +84,7 @@ class Login extends React.Component{
                             </FormGroup>
                             <FormGroup>
                                 <Col md={{offset:2, size:10}}>
-                                    <Button type="submit" color="primary">
+                                    <Button type="submit" disabled={!isPasswordProvided} color="primary">
                                         Login
                                     </Button>
                                 </Col>

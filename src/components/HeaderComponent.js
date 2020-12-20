@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import {Nav, Navbar, NavbarBrand, NavbarToggler, Collapse, NavItem,Button} from 'reactstrap';
+import {Nav, Navbar,  NavbarToggler, Collapse, NavItem} from 'reactstrap';
 
 class Header extends React.Component{
 
@@ -38,6 +38,11 @@ class Header extends React.Component{
                         <Nav navbar>
                             <NavItem>
                                 <NavLink className="nav-link" to="/login">Login</NavLink>
+                            </NavItem>
+                        </Nav>
+                        <Nav navbar className="ml-auto">
+                            <NavItem>
+                                <NavLink className="nav-link" to="/login">Logout</NavLink>
                             </NavItem>
                         </Nav>
                     </Collapse>

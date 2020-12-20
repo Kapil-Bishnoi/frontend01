@@ -40,7 +40,7 @@ class Signup extends React.Component{
 
     handleFormSubmit(event){
         event.preventDefault();  
-
+        console.log("Registered");
         const User = {
             firstname: this.state.firstname,
             lastname: this.state.lastname,
@@ -51,8 +51,9 @@ class Signup extends React.Component{
         axios.post("http://localhost:8080/signup",User).then(response => {
 
             if(response.data!==null){
-                console.log(response.data);
                 alert("You Have Successfully Registered");
+                console.log(response.data);
+                this.props.history.push('/login');
                 this.setState(this.initialState);
             }
         });
