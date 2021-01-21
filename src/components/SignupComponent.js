@@ -1,6 +1,5 @@
 import React from 'react';
 import {Form, FormGroup, Label,FormFeedback, Input ,Col,Button } from 'reactstrap';
-import axios from 'axios';
 
 class Signup extends React.Component{
 
@@ -48,15 +47,39 @@ class Signup extends React.Component{
             password: this.state.password,
         };
 
-        axios.post("http://localhost:8080/signup",User).then(response => {
+        // axios.post("http://localhost:8080/signup",User).then(response => {
 
-            if(response.data!==null){
+        //     if(response.data!==null){
+        //         alert("You Have Successfully Registered");
+        //         console.log(response.data);
+        //         this.props.history.push('/login');
+        //         this.setState(this.initialState);
+        //     }
+        // });
+
+        fetch("http://localhost:8080/signup",{
+            method: 'POST',
+            body: User,
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Credentials': 'true'
+            },
+            // mode: 'no-cors',
+
+        }).then((response) => {
+            if(response.ok){
                 alert("You Have Successfully Registered");
-                console.log(response.data);
+                console.log(response.data.json());
                 this.props.history.push('/login');
                 this.setState(this.initialState);
             }
-        });
+            else{
+                // var errMsg = "error";
+                throw response;
+            }
+        }).catch((error) => (console.log(error)));
+
     }
     
     handleBlur = (field) => (e)=>{
